@@ -21,6 +21,7 @@ jobs:
         with:
           root_file: main.tex
           compiler: lualatex
+          latexmk_use_lualatex: true # Используем latexmk для авто-повторов
           args: "-file-line-error -interaction=nonstopmode -shell-escape"
 
       # 1. Create a realise of PDF + sources
