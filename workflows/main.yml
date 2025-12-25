@@ -1,0 +1,50 @@
+name: Build, Release and Deploy
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on tags v1.0, v2.1.3 etc.
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          compiler: lualatex
+          args: "-file-line-error -interaction=nonstopmode -shell-escape"
+
+      # 1. Create a realise of PDF + sources
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            main.pdf
+          # GitHub gathers source code into .zip/.tar.gz automatically
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Prepare files for GitHub Pages
+      - name: Setup Pages
+        run: |
+          mkdir public
+          cp main.pdf public/index.pdf
+          # index.html can be added with an URL to PDF
+
+      - name: Upload artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
